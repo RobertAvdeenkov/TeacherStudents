@@ -4,3 +4,4 @@ fastapi
 python-jose[cryptography]
 sqlalchemy
 aiosqlite
+uvicorn[standart]
