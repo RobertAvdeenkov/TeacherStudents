@@ -6,3 +6,4 @@ aiosqlite
 uvicorn[standart]
 asyncpg
 python-multipart
+psycopg2
