@@ -60,7 +60,7 @@ async def mainpageSHOW(token=Cookie(), db:AsyncSession=Depends(get_db), data=Bod
     user=res[0]
     print(data)
     txt='<a href="/create" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Создать объявление</a><p></p><a href="/adlist" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Мои объявления</a><p></p>' if user.role=='tutor' else ''
-    ads=(await db.execute(select(Ad).options(selectinload(Ad.reviews)).filter(Ad.subject.ilike(f'%{data['subject']}%'), Ad.price<=int(data['price'] if data['price'] else 9999), Ad.location.ilike(f'%{data['location']}%')))).all()
+    ads=(await db.execute(select(Ad).options(selectinload(Ad.reviews)).filter(Ad.subject.ilike(f'%{data['subject']}%'), Ad.price<=int(data['price'] if data['price'] else  2147483647), Ad.location.ilike(f'%{data['location']}%')))).all()
     for i in ads:
         rating=0
         counter=0
