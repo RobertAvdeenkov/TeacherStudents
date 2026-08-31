@@ -5,3 +5,4 @@ sqlalchemy
 aiosqlite
 uvicorn[standart]
 asyncpg
+python-multipart
