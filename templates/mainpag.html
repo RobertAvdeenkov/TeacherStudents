@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Репетиторы</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+            background: #0d0d0d;
+            color: #e0e0e0;
+        }
+        h1 {
+            color: #ffcc00;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 12px;
+        }
+        .search {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .search input, .search select {
+            flex: 1;
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            border-radius: 6px;
+        }
+        .search button {
+            padding: 8px 20px;
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .search button:hover {
+            background: #e6b800;
+        }
+        .tutor {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+        }
+        .tutor h3 {
+            color: #ffcc00;
+            margin-top: 0;
+        }
+        .tutor .info {
+            font-size: 14px;
+            color: #aaa;
+        }
+        .tutor .price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .tutor .actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .tutor .actions button {
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .tutor .actions button:hover {
+            background: #e6b800;
+        }
+        .tutor .actions button.secondary {
+            background: #444;
+            color: #fff;
+        }
+        .tutor .actions button.secondary:hover {
+            background: #555;
+        }
+        .flash {
+            padding: 10px;
+            margin-bottom: 16px;
+            border-radius: 6px;
+            display: none;
+        }
+        .flash.success {
+            background: #1e7e34;
+            color: #d4edda;
+            display: block;
+        }
+        .flash.error {
+            background: #7e1e1e;
+            color: #f8d7da;
+            display: block;
+        }
+        .role-switch {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .role-switch a {
+            color: #ffcc00;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .role-switch a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Найди репетитора</h1>
+
+    <div class="role-switch">
+        <a href="/register">Стать репетитором</a> |
+        <a href="/profile">Личный кабинет</a>
+    </div>
+
+    <div id="flash" class="flash"></div>
+
+    <div class="search">
+        <input id="subject" placeholder="Предмет (например, математика)">
+        <input id="location" placeholder="Район или город">
+        <select id="price">
+            <option value="">Цена</option>
+            <option value="500">до 500 ₽</option>
+            <option value="1000">до 1000 ₽</option>
+            <option value="1500">до 1500 ₽</option>
+            <option value="2000">до 2000 ₽</option>
+        </select>
+        <button onclick="list()">Найти</button>
+    </div>
+
+    <div id="results">
+        <div class="container">
+            <div id="content">
+                    <!-- Сюда будет вставляться полный блок -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showMessage(text, type = 'success') {
+            const el = document.getElementById('flash');
+            el.textContent = text;
+            el.className = 'flash ' + type;
+            setTimeout(() => { el.style.display = 'none'; }, 4000);
+        }
+
+        function searchTutors() {
+            const subject = document.getElementById('subject').value.trim();
+            const location = document.getElementById('location').value.trim();
+            const price = document.getElementById('price').value;
+            console.log('Поиск:', { subject, location, price });
+            showMessage('🔍 Поиск выполнен (заглушка)', 'success');
+        }
+
+        async function book(id) {
+
+                console.log('Запись к репетитору', id);
+                window.location.href='/booking?id='+id
+
+        }
+        async function viewProfile(id) {
+            console.log('Просмотр профиля', id);
+            window.location.href = '/ad?id=' + id;
+        }
+
+
+        async function list() {
+                const subject = document.getElementById('subject').value.trim();
+                const location = document.getElementById('location').value.trim();
+                const price = document.getElementById('price').value;
+                try {
+                    const response = await fetch('/mainpageSHOW', {
+                        method: 'POST',
+                        headers: { 
+                            "Accept": "application/json", 
+                            "Content-Type": "application/json", 
+                        },
+                        body:JSON.stringify({'subject':subject,'location':location,'price':price})
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        // В message вставляем data.message
+                        const messageElement = document.getElementById("message");
+                        if (messageElement) {
+                            messageElement.textContent = data.message;
+                        }
+                        
+                        // В content вставляем полный блок
+                        const contentElement = document.getElementById('content');
+                        if (contentElement) {
+                            contentElement.innerHTML = `
+                                ${data.message}
+                            `;
+                        }
+                    } else {
+                        const error = await response.json();
+                        alert(error.detail || 'Ошибка авторизации');
+                    }
+                } catch (e) {
+                    console.error('Ошибка:', e);
+                    alert('Произошла ошибка при выполнении запроса: ' + e.message);
+                }
+            }
+
+        async function feedback(id) {
+            window.location.href='/review?id='+id
+        }
+
+            // Вызываем функцию при загрузке страницы
+        document.addEventListener('DOMContentLoaded', list);
+    </script>
+</body>
+</html>

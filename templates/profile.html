@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Личный кабинет</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        
+        body {
+            background-color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Courier New', monospace;
+        }
+        .message { border: 1px solid #ccc; padding: 12px; margin-bottom: 10px; border-radius: 6px; }
+        .category { font-weight: bold; color: #ffcc00; }
+        .date { font-size: 12px; color: #888; }
+        button{ font-weight: bold; color: #000000; background-color: #ffcc00;}
+        .premium {
+            color: #ffcc00;
+            font-weight: bold;
+        }
+
+        h1,h2,h3,h4,h5,h6{
+            color: #ffcc00;
+            overflow: hidden;
+            white-space: nowrap;
+            animation: typewriter 0.5s steps(10000) 0.5s 1 normal both;
+            width: none;
+        }
+
+        .tutor {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+        <div class="container">
+                    
+                    <!-- Элемент для сообщения (будет отображать data.message) -->
+                    
+                    <!-- Элемент для контента -->
+            <div id="content">
+                        <!-- Сюда будет вставляться полный блок -->
+            </div>
+        </div>
+</body>
+<script>
+            async function list() {
+                try {
+                    const response = await fetch('/profileSHOW', {
+                        method: 'POST',
+                        headers: { 
+                            "Accept": "application/json", 
+                            "Content-Type": "application/json"
+                        },
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        // В message вставляем data.message
+                        const messageElement = document.getElementById("message");
+                        if (messageElement) {
+                            messageElement.textContent = data.message;
+                        }
+                        
+                        // В content вставляем полный блок
+                        const contentElement = document.getElementById('content');
+                        if (contentElement) {
+                            contentElement.innerHTML = `
+                                ${data.message}
+                            `;
+                        }
+                    } else {
+                        const error = await response.json();
+                        alert(error.detail || 'Ошибка авторизации');
+                    }
+                } catch (e) {
+                    console.error('Ошибка:', e);
+                    alert('Произошла ошибка при выполнении запроса: ' + e.message);
+                }
+            }
+
+            async function send(id) {
+            // 3. ПОТОМ отправляем запрос
+                try {
+                    const response = await fetch('/deleteBOOKING', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({'id':id})
+                    });
+
+                    if (response.ok) {
+                        alert('Успешно!')
+                        location.reload()
+                    } else {
+                        const error = await response.json();
+                        alert(error.detail || 'Ошибка авторизации');
+                    }
+                } catch (e) {
+                    ;
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', list);
+        </script>
+</html>

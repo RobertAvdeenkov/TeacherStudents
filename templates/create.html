@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Создать объявление</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+            text-align: center;
+            background-color: #000000;
+            color: #ffcc00;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background-color: #262626;
+            color: #ffcc00;
+            border: 1px solid #ffcc00;
+            font-family: 'Courier New', monospace;
+        }
+        button {
+            padding: 10px 20px;
+            background: #ffcc00;
+            color: black;
+            border: none;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #e6b800;
+        }
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #ffcc00;
+            padding: 20px;
+            z-index: 1000;
+        }
+        h1 {
+            margin-top: 80px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Создать объявление</h1>
+    <form action="/createAD" method="post">
+        <input name="subject" placeholder="Предмет" required>
+        <input name="exp" placeholder="Опыт в годах" required>
+        <input name="price" placeholder="Стоимость работы за час в рублях" required>
+        <textarea placeholder="О себе" name="info" rows="5" required></textarea>
+        <input name="contact" placeholder="Контактные данные" required>
+        <input name="location" placeholder="Локация" required>
+        <button type="submit">Отправить</button>
+    </form>
+</body>
+</html>

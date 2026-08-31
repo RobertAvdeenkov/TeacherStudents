@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Регистрация</title>
+
+    </head>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0d0d0d;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+        }
+    
+        .frame{
+            border: 10px solid #ffcc00;
+            padding: 12px 24px;
+            text-align: center;
+
+        }
+
+        h1{
+            color: #ffcc00;
+        }
+
+        h2{
+            color: #ffcc00;
+        }
+
+        h3{
+            color: #ffcc00;
+        }
+
+        .container{
+            background-color: #0d0d0d;
+            text-align: center;
+            min-width: 40%;
+            height: auto;
+            padding: 12px 12px;
+            border-radius: 0%;
+        }
+
+        .ots{
+            padding: 8px 12px;
+        }
+
+        button{
+            border-radius: 1%;
+            background-color:#ffcc00;
+            color: #000000;
+            font-size: 24px;
+            stroke-color: #000000;
+            font-family: 'Courier New', monospace;
+        }
+        input{
+            color: #ffcc00;
+            background-color: #262626;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        select option {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        a{
+            color: #ffcc00;
+        }
+    </style>
+    <div class="frame">
+        <h1>Здравствуйте!</h1>
+        <div class="container">
+            <h2>Логин</h2>
+            <p></p>
+            <input id="login" type="text" placeholder="Логин...">
+            <div class="ots"></div>
+            <h2>Пароль</h2>
+            <p></p>
+            <input id="password" type="password" placeholder="Пароль...">
+            <p style="color: #ffcc00;">Выберите роль</p>
+            <select id="role" required>
+                <option value="student">Ученик</option>
+                <option value="tutor">Репетитор</option>
+            </select>
+            <p></p>
+            <div class="ots"></div>
+            <button onclick="send()">Авторизация</button>
+            <p></p>
+            <a href="/">Уже есть аккаунт? Логин</a>
+        </div>
+    </div>
+    <p></p>
+    <script>
+
+        async function send() {
+                // 1. СНАЧАЛА получаем значения из полей
+            const name = document.getElementById('login').value;
+            const password = document.getElementById('password').value;
+            const role= document.getElementById('role').value;
+
+            // 2. Проверяем, что поля не пустые
+            if (!name || !password || !role) {
+                alert('Заполните все поля!');
+                return;
+            }
+
+        // 3. ПОТОМ отправляем запрос
+            try {
+                const response = await fetch('/reg', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({'name':name, 'password':password, 'role':role})
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    window.location.href = data.redirect_url;
+                } else {
+                    const error = await response.json();
+                    alert(error.detail || 'Ошибка авторизации');
+                }
+            } catch (e) {
+                ;
+            }
+        }
+    </script>
+</html>

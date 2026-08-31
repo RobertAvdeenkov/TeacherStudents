@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Запись</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+            text-align: center;
+            background-color: #000000;
+            color: #ffcc00;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background-color: #262626;
+            color: #ffcc00;
+            border: 1px solid #ffcc00;
+            font-family: 'Courier New', monospace;
+        }
+        button {
+            padding: 10px 20px;
+            background: #ffcc00;
+            color: black;
+            border: none;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #e6b800;
+        }
+    </style>
+</head>
+<body>
+    <h1>Запись</h1>
+    <form action="/book" method="post">
+        <input type="hidden" name="tutor_id" id="tutor_id">
+        <input type="datetime-local" name="date" required>
+        <input type="text" name="contact" required placeholder="Контактные данные">
+        <button type="submit">Записаться</button>
+    </form>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const tutorId = urlParams.get('id');
+        if (tutorId) {
+            document.getElementById('tutor_id').value = tutorId;
+        }
+    </script>
+</body>
+</html>
