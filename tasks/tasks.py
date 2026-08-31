@@ -206,7 +206,7 @@ async def review(id=Query()):
     return FileResponse('templates/review.html')
 
 @router.post('/feedback')
-async def feedback(tutor_id=Form(), category:int=Form(),text:str=Form(), token=Cookie(), db:AsyncSession=Depends(get_db)):
+async def feedback(tutor_id:int=Form(), category=Form(),text:str=Form(), token=Cookie(), db:AsyncSession=Depends(get_db)):
     res=(await db.execute(select(User).filter(User.name==get_by_token(token)))).first()
     if not res:
         raise HTTPException(401, 'Вы не зарегистрированы')
@@ -214,7 +214,7 @@ async def feedback(tutor_id=Form(), category:int=Form(),text:str=Form(), token=C
     target=(await db.execute(select(Review).filter(Review.user_id==user.id, Review.ad_id==int(tutor_id)))).first()
     if target:
         return RedirectResponse('/mainpage',status_code=303)
-    target=Review(title=text,stars=int(category),ad_id=tutor_id, user_id=user.id)
+    target=Review(title=text,stars=int(category),ad_id=int(tutor_id), user_id=user.id)
     db.add(target)
     await db.commit()
     return RedirectResponse('/mainpage',status_code=303)
@@ -224,7 +224,7 @@ def booking(id=Query()):
     return FileResponse('templates/booking.html')
 
 @router.post('/book')
-async def book(token=Cookie(), db:AsyncSession=Depends(get_db), tutor_id=Form(), date=Form(),contact=Form()):
+async def book(token=Cookie(), db:AsyncSession=Depends(get_db), tutor_id:int=Form(), date=Form(),contact:str=Form()):
     res=(await db.execute(select(User).filter(User.name==get_by_token(token)))).first()
     if not res:
         raise HTTPException(401, 'Вы не зарегистрированы')
@@ -252,7 +252,7 @@ async def createROOT(token=Cookie()):
     return FileResponse('templates/create.html')
 
 @router.post('/createAD')
-async def create(token=Cookie(), db:AsyncSession=Depends(get_db), subject=Form(), exp=Form(),price=Form(),info=Form(),contact=Form(),location=Form()):
+async def create(token=Cookie(), db:AsyncSession=Depends(get_db), subject=Form(), exp:int=Form(),price:int=Form(),info=Form(),contact=Form(),location=Form()):
     res=(await db.execute(select(User).filter(User.name==get_by_token(token)))).first()
     if not res:
         return HTTPException(401, 'вы не зарегистрированы')
