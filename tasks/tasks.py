@@ -259,7 +259,7 @@ async def create(token=Cookie(), db:AsyncSession=Depends(get_db), subject=Form()
     user=res[0]
     if user.role=='student':
         return RedirectResponse('/mainpage',status_code=303)
-    target=Ad(subject=subject, expirience=exp, price=price, info=info,contact=contact,location=location, user_id=user.id)
+    target=Ad(subject=subject, expirience=int(exp), price=int(price), info=info,contact=contact,location=location, user_id=user.id)
     db.add(target)
     await db.commit()
     return RedirectResponse('/mainpage',status_code=303)
