@@ -211,7 +211,7 @@ async def feedback(tutor_id=Form(), category:int=Form(),text:str=Form(), token=C
     if not res:
         raise HTTPException(401, 'Вы не зарегистрированы')
     user=res[0]
-    target=(await db.execute(select(Review).filter(Review.user_id==user.id, Review.ad_id==tutor_id))).first()
+    target=(await db.execute(select(Review).filter(Review.user_id==user.id, Review.ad_id==int(tutor_id)))).first()
     if target:
         return RedirectResponse('/mainpage',status_code=303)
     target=Review(title=text,stars=int(category),ad_id=tutor_id, user_id=user.id)
