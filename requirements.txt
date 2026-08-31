@@ -1,4 +1,3 @@
-psycopg2
 bcrypt
 fastapi
 python-jose[cryptography]
