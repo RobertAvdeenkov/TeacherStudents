@@ -185,24 +185,19 @@ async def deletebooking(token=Cookie(), db:AsyncSession=Depends(get_db), data=Bo
     res=(await db.execute(select(User).filter(User.name==get_by_token(token)))).first()
     if not res:
         raise HTTPException(401, 'Вы не зарегистрированы')
-    adres=(await db.execute(select(Ad).filter(Ad.id==int(data['id'])))).first()
-    if not adres:
-        print(adres)
-        return RedirectResponse('/mainpage',status_code=303)
-    ad=adres[0]
     user=res[0]
-    print(user,ad)
-    if ad.user_id!=user.id:
-        print('student')
-        target=(await db.execute(select(Booking).filter(Booking.id==int(data['id']), Booking.user_id==user.id))).first()
+    adres=(await db.execute(select(Booking).filter(Booking.id==data['id']).options(selectinload(Booking.ad)))).first()
+    if not adres:
+        print(adres,'adres')
+        return RedirectResponse('/mainpage',status_code=303)
+    target=adres[0]
+    ad=adres[0].ad
+    if user.id==ad.user_id or user.id==target.user_id:
+        await db.delete(target)
+        await db.commit()
+        return {'status':'ok'}
     else:
-        print('dddd')
-        target= (await db.execute(select(Booking).filter(Booking.id==int(data['id'])))).first()
-    print(target,'target')
-    if not target:
-        raise HTTPException(400, 'Такого бронирования нет!')
-    await db.delete(target[0])
-    await db.commit()
+        raise HTTPException(404, 'Такой брони нет')
 
 @router.get('/review')
 async def review(id=Query()):
