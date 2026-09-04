@@ -163,7 +163,7 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
                 booking+=f'''
                 <h3>{i[0].subject}, {book.contact}</h3>
                 <h4>{book.time}<h4>
-                <button onclick="send({i[0].id})" style="background-color: red;">Отменить</button>
+                <button onclick="send({book.id})" style="background-color: red;">Отменить</button>
                 <hr>
                 '''
     txt=f'''
