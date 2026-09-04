@@ -181,7 +181,7 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
 
 @router.post('/deleteBOOKING')
 async def deletebooking(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body()):
-    print(data)
+    print(data,'data')
     res=(await db.execute(select(User).filter(User.name==get_by_token(token)))).first()
     if not res:
         raise HTTPException(401, 'Вы не зарегистрированы')
@@ -191,7 +191,9 @@ async def deletebooking(token=Cookie(), db:AsyncSession=Depends(get_db), data=Bo
         return RedirectResponse('/mainpage',status_code=303)
     ad=adres[0]
     user=res[0]
+    print(user,ad)
     if ad.user_id!=user.id:
+        print('student')
         target=(await db.execute(select(Booking).filter(Booking.id==int(data['id']), Booking.user_id==user.id))).first()
     else:
         print('dddd')
