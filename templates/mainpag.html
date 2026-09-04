@@ -224,6 +224,28 @@
             window.location.href='/review?id='+id
         }
 
+        async function like(id) {
+        // 3. ПОТОМ отправляем запрос
+            try {
+                const response = await fetch('/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({'id':id})
+                });
+
+                if (response.ok) {
+                    alert('Успешно!')
+                } else {
+                    const error = await response.json();
+                    alert(error.detail || 'Ошибка авторизации');
+                }
+            } catch (e) {
+                ;
+            }
+        }
+
             // Вызываем функцию при загрузке страницы
         document.addEventListener('DOMContentLoaded', list);
     </script>

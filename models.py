@@ -13,6 +13,7 @@ class User(Base):
     ads=relationship('Ad',back_populates='user')
     bookings=relationship('Booking',back_populates='user')
     reviews=relationship('Review',back_populates='user')
+    saves=relationship('Save', back_populates='user')
 
 class Ad(Base):
     __tablename__='ads'
@@ -29,6 +30,7 @@ class Ad(Base):
     user=relationship('User', back_populates='ads')
     bookings=relationship('Booking', back_populates='ad')
     reviews=relationship('Review', back_populates='ad')
+    saves=relationship('Save', back_populates='ad')
 
 class Booking(Base):
     __tablename__='bookings'
@@ -52,3 +54,11 @@ class Review(Base):
     ad_id=Column(Integer,ForeignKey('ads.id'))
     user=relationship('User', back_populates='reviews')
     ad=relationship('Ad', back_populates='reviews')
+
+class Save(Base):
+    __tablename__='saved'
+    id=Column(Integer,primary_key=True)
+    user_id=Column(Integer,ForeignKey('users.id'))
+    ad_id=Column(Integer,ForeignKey('ads.id'))
+    user=relationship('User', back_populates='saves')
+    ad=relationship('Ad', back_populates='saves')

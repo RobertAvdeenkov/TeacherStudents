@@ -59,7 +59,7 @@ async def mainpageSHOW(token=Cookie(), db:AsyncSession=Depends(get_db), data=Bod
         return RedirectResponse('/',status_code=303)
     user=res[0]
     print(data)
-    txt='<a href="/create" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Создать объявление</a><p></p><a href="/adlist" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Мои объявления</a><p></p>' if user.role=='tutor' else ''
+    txt='<a href="/create" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Создать объявление</a><p></p><a href="/adlist" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Мои объявления</a><p></p>' if user.role=='tutor' else '<a href="/saves" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Избранные объявления</a><p></p>'
     ads=(await db.execute(select(Ad).options(selectinload(Ad.reviews)).filter(Ad.subject.ilike(f'%{data['subject']}%'), Ad.price<=int(data['price'] if data['price'] else  2147483647), Ad.location.ilike(f'%{data['location']}%')))).all()
     for i in ads:
         rating=0
@@ -77,6 +77,7 @@ async def mainpageSHOW(token=Cookie(), db:AsyncSession=Depends(get_db), data=Bod
             <div class="actions">
                 <button onclick="book({i[0].id})">Записаться</button>
                 <button onclick="feedback({i[0].id})">Оставить отзыв</button>
+                <button onclick="like({i[0].id})">Добавить в избранные</button>
                 <button class="secondary" onclick="viewProfile({i[0].id})">Подробнее</button>
             </div>
         </div>
@@ -307,3 +308,62 @@ async def remove(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body()):
     await db.delete(ad)
     await db.commit()
     return {'status':'ok'}
+
+@router.get('/saves')
+async def savesList(token=Cookie()):
+    get_by_token(token)
+    return FileResponse('templates/saved.html')
+
+@router.post('/saveSHOW')
+async def saveSHOW(token=Cookie(), db:AsyncSession=Depends(get_db)):
+    res=(await db.execute(select(User).filter(User.name==get_by_token(token)))).first()
+    if not(res):
+        return RedirectResponse('/',status_code=303)
+    user=res[0]
+    result=(await db.execute(select(Save).filter(Save.user_id==user.id).options(selectinload(Save.ad)))).all()
+    txt='<h2>Список</h2><p></p>'
+    for i in result:
+        ad=i[0].ad
+        txt+=f'''
+        <div class="tutor">
+            <h3>Предмет: {ad.subject}</h3>
+            <h3>Место: {ad.location}</h3>
+            <h3>Контактная информация: {ad.contact}</h3>
+            <a href="/ad?id={ad.id}" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Посмотреть объявление</a>
+            <button style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;" onclick="send({i[0].id})">Убрать объявление</button>
+        </div>
+        '''
+    print(txt)
+    if txt!='<h2>Список</h2><p></p>':
+        return {'message':txt}
+    else:
+        return {'message':'<div class="tutor"><h2>У вас нет избранных объявлений¯\\_(ツ)_/¯</h2></div>'}
+
+@router.post('/deleteSAVE')
+async def deleteSAVE(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body()):
+    res=(await db.execute(select(User).filter(User.name==get_by_token(token)).options(selectinload(User.saves)))).first()
+    if not(res):
+        return RedirectResponse('/', status_code=303)
+    user=res[0]
+    for i in user.saves:
+        if i.id==int(data['id']):
+            target=i
+    if not i:
+        raise HTTPException(400, 'Объявления нет в избранных!')
+    await db.delete(target)
+    await db.commit()
+
+@router.post('/save')
+async def save(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body()):
+    res=(await db.execute(select(User).filter(User.name==get_by_token(token)).options(selectinload(User.saves)))).first()
+    if not res:
+        return RedirectResponse('/',status_code=303)
+    user=res[0]
+    if user.role=='tutor':
+        raise HTTPException(400, 'Недостаточно прав! Сохранять могут только ученики')
+    for i in user.saves:
+        if i.id==int(data['id']):
+            raise HTTPException(400,'Это объявление уже есть в избранных!')
+    target=Save(user_id=user.id, ad_id=int(data['id']))
+    db.add(target)
+    await db.commit()
