@@ -192,6 +192,7 @@ async def deletebooking(token=Cookie(), db:AsyncSession=Depends(get_db), data=Bo
         return RedirectResponse('/mainpage',status_code=303)
     target=adres[0]
     ad=adres[0].ad
+    print(f"user.id: {user.id}, ad.user_id: {ad.user_id}, target.user_id: {target.user_id}")
     if user.id==ad.user_id or user.id==target.user_id:
         await db.delete(target)
         await db.commit()
