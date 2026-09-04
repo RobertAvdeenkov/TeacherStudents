@@ -353,15 +353,15 @@ async def deleteSAVE(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body(
 
 @router.post('/save')
 async def save(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body()):
-    res=(await db.execute(select(User).filter(User.name==get_by_token(token)).options(selectinload(User.saves)))).first()
+    res=(await db.execute(select(User).filter(User.name==get_by_token(token)))).first()
     if not res:
         return RedirectResponse('/',status_code=303)
     user=res[0]
     if user.role=='tutor':
         raise HTTPException(400, 'Недостаточно прав! Сохранять могут только ученики')
-    for i in user.saves:
-        if i.id==int(data['id']):
-            raise HTTPException(400,'Это объявление уже есть в избранных!')
-    target=Save(user_id=user.id, ad_id=int(data['id']))
+    result=(await db.execute(select(Save).filter(Save.ad_id==data['id'], Save.user_id==user.id))).first()
+    if result:
+        raise HTTPException(400, 'Объявление уже есть в избранных!')
+    target=Save(user_id=user.id, ad_id=data['id'])
     db.add(target)
     await db.commit()
