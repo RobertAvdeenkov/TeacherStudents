@@ -240,7 +240,7 @@ async def book(token=Cookie(), db:AsyncSession=Depends(get_db), tutor_id:int=For
     date[1]=date[1].split(':')
     now=datetime.now()
     print(date)
-    data=datetime(year=int(date[0][0]), month=int(date[0][1]),day=int(date[0][2]), hour=int(date[1][0]), minute=int(date[1][1]))
+    data=datetime(year=int(date[0][0]) if int(date[0][0])<9999 else now.year, month=int(date[0][1]),day=int(date[0][2]), hour=int(date[1][0]), minute=int(date[1][1]))
     if data<now or data.year-now.year>100:
         raise HTTPException(400, 'Введите корректную дату!')
     target=Booking(time=data, status='ok',user_id=user.id, adr_id=tutor_id,contact=contact)
