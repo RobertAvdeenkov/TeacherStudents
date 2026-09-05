@@ -263,7 +263,10 @@ async def create(token=Cookie(), db:AsyncSession=Depends(get_db), subject=Form()
         return RedirectResponse('/mainpage',status_code=303)
     if not(str(exp).isdigit()) or not(str(price).isdigit()):
         raise HTTPException(400, 'Введите корректные данные')
-    target=Ad(subject=subject, expirience=int(exp) if exp>-1 else 0, price=int(price) if price>-1 else 0, info=info,contact=contact,location=location, user_id=user.id)
+    if  int(exp)<-1: exp=0
+    if int(price)<-1:price=0
+
+    target=Ad(subject=subject, expirience=int(exp), price=int(price), info=info,contact=contact,location=location, user_id=user.id)
     db.add(target)
     await db.commit()
     return RedirectResponse('/mainpage',status_code=303)
