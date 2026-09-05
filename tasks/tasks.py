@@ -238,8 +238,11 @@ async def book(token=Cookie(), db:AsyncSession=Depends(get_db), tutor_id:int=For
     date=date.split(' ')
     date[0]=date[0].split('-')
     date[1]=date[1].split(':')
+    now=datetime.now()
     print(date)
     data=datetime(year=int(date[0][0]), month=int(date[0][1]),day=int(date[0][2]), hour=int(date[1][0]), minute=int(date[1][1]))
+    if data<now or data.year-now.year>100:
+        raise HTTPException(400, 'Введите корректную дату!')
     target=Booking(time=data, status='ok',user_id=user.id, adr_id=tutor_id,contact=contact)
     db.add(target)
     await db.commit()
@@ -251,14 +254,16 @@ async def createROOT(token=Cookie()):
     return FileResponse('templates/create.html')
 
 @router.post('/createAD')
-async def create(token=Cookie(), db:AsyncSession=Depends(get_db), subject=Form(), exp:int=Form(),price:int=Form(),info=Form(),contact=Form(),location=Form()):
+async def create(token=Cookie(), db:AsyncSession=Depends(get_db), subject=Form(), exp=Form(),price=Form(),info=Form(),contact=Form(),location=Form()):
     res=(await db.execute(select(User).filter(User.name==get_by_token(token)))).first()
     if not res:
         return HTTPException(401, 'вы не зарегистрированы')
     user=res[0]
     if user.role=='student':
         return RedirectResponse('/mainpage',status_code=303)
-    target=Ad(subject=subject, expirience=int(exp), price=int(price), info=info,contact=contact,location=location, user_id=user.id)
+    if not(str(exp).isdigit()) or not(str(price).isdigit()):
+        raise HTTPException(400, 'Введите корректные данные')
+    target=Ad(subject=subject, expirience=int(exp) if exp>-1 else 0, price=int(price) if price>-1 else 0, info=info,contact=contact,location=location, user_id=user.id)
     db.add(target)
     await db.commit()
     return RedirectResponse('/mainpage',status_code=303)

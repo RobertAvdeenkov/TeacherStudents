@@ -28,9 +28,10 @@ class Ad(Base):
 
     user_id=Column(Integer,ForeignKey('users.id'))
     user=relationship('User', back_populates='ads')
-    bookings=relationship('Booking', back_populates='ad')
-    reviews=relationship('Review', back_populates='ad')
-    saves=relationship('Save', back_populates='ad')
+
+    bookings=relationship('Booking', back_populates='ad', cascade="all, delete")
+    reviews=relationship('Review', back_populates='ad', cascade="all, delete")
+    saves=relationship('Save', back_populates='ad', cascade="all, delete")
 
 class Booking(Base):
     __tablename__='bookings'
