@@ -1,4 +1,4 @@
-from sqlalchemy import Column,String,Integer,Float,DateTime,func,ForeignKey
+from sqlalchemy import Column,String,Integer,Float,DateTime,func,ForeignKey,Boolean
 from sqlalchemy.orm import DeclarativeBase,relationship
 
 class Base(DeclarativeBase):pass
@@ -14,6 +14,7 @@ class User(Base):
     bookings=relationship('Booking',back_populates='user')
     reviews=relationship('Review',back_populates='user')
     saves=relationship('Save', back_populates='user')
+    messages=relationship('Message', back_populates='user')
 
 class Ad(Base):
     __tablename__='ads'
@@ -42,6 +43,7 @@ class Booking(Base):
 
     user_id=Column(Integer,ForeignKey('users.id'))
     adr_id=Column(Integer,ForeignKey('ads.id'))
+    accepted=Column(Boolean,default=False)
     user=relationship('User', back_populates='bookings')
     ad=relationship('Ad', back_populates='bookings')
 
@@ -63,3 +65,19 @@ class Save(Base):
     ad_id=Column(Integer,ForeignKey('ads.id'))
     user=relationship('User', back_populates='saves')
     ad=relationship('Ad', back_populates='saves')
+
+class Message(Base):
+    __tablename__='messages'
+    id=Column(Integer,primary_key=True)
+    user_id=Column(Integer,ForeignKey('users.id'))
+    to=Column(Integer)
+    fro=Column(String, default='')
+    txt=Column(String, default='')
+    type=Column(String, default='info')
+    created_at=Column(DateTime, default=func.now())
+    booking_id=Column(Integer,default=None, nullable=True)
+
+    info=Column(String, default='')
+
+    status=Column(Boolean, default=False)
+    user=relationship('User', back_populates='messages')
