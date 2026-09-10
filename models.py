@@ -15,6 +15,8 @@ class User(Base):
     reviews=relationship('Review',back_populates='user')
     saves=relationship('Save', back_populates='user')
     messages=relationship('Message', back_populates='user')
+    views=relationship('View', back_populates='user')
+
 
 class Ad(Base):
     __tablename__='ads'
@@ -26,6 +28,7 @@ class Ad(Base):
     rating=Column(Float,default=0)
     contact=Column(String)
     location=Column(String)
+    counter=Column(Integer, default=0, nullable=False)
 
     user_id=Column(Integer,ForeignKey('users.id'))
     user=relationship('User', back_populates='ads')
@@ -33,6 +36,7 @@ class Ad(Base):
     bookings=relationship('Booking', back_populates='ad', cascade="all, delete")
     reviews=relationship('Review', back_populates='ad', cascade="all, delete")
     saves=relationship('Save', back_populates='ad', cascade="all, delete")
+    views=relationship('View', back_populates='ad', cascade="all, delete")
 
 class Booking(Base):
     __tablename__='bookings'
@@ -81,3 +85,12 @@ class Message(Base):
 
     status=Column(Boolean, default=False)
     user=relationship('User', back_populates='messages')
+
+class View(Base):
+    __tablename__='views'
+    id=Column(Integer,primary_key=True)
+    user_id=Column(Integer,ForeignKey('users.id'))
+    ad_id=Column(Integer, ForeignKey('ads.id'))
+
+    user=relationship('User', back_populates='views')
+    ad=relationship('Ad', back_populates='views')
