@@ -58,6 +58,7 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
     {f'''
     <h2>Установить лимит бронирований</h2>
     <select onchange="setLimit()" id="limitset">
+        <option value="" disabled selected>Выберите лимит</option>
         <option value="0">Отключить лимит</option>
         <option value="5">5</option>
         <option value="10" selected>10</option>
