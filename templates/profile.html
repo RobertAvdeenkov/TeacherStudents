@@ -40,6 +40,21 @@
             border-radius: 8px;
             text-align: center;
         }
+
+
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        select option {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
     </style>
 </head>
 <body>
@@ -99,6 +114,29 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({'id':id})
+                    });
+
+                    if (response.ok) {
+                        alert('Успешно!')
+                        location.reload()
+                    } else {
+                        const error = await response.json();
+                        alert(error.detail || 'Ошибка авторизации');
+                    }
+                } catch (e) {
+                    ;
+                }
+            }
+
+            async function setLimit() {
+                data=document.getElementById('limitset').value;
+                try {
+                    const response = await fetch('/setlimit', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({'data':data})
                     });
 
                     if (response.ok) {

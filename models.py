@@ -9,6 +9,7 @@ class User(Base):
     name=Column(String)
     password=Column(String)
     role=Column(String)
+    limit=Column(Integer, default=None)
 
     ads=relationship('Ad',back_populates='user')
     bookings=relationship('Booking',back_populates='user')
