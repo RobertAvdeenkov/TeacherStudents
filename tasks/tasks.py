@@ -30,7 +30,7 @@ async def feedback(tutor_id:int=Form(), category=Form(),text:str=Form(), token=C
     return RedirectResponse('/mainpage',status_code=303)
 
 @router.get('/booking')
-def booking(id=Query()):
+async def booking(id=Query()):
     return FileResponse('templates/booking.html')
 
 @router.post('/book')

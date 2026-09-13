@@ -49,6 +49,13 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
                     <button onclick="send({book.id})" style="background-color: red;">Отменить</button>
                     <hr>
                     '''
+        indicator=round(counter / user.limit * 100) if user.limit else 0
+        if indicator<50:
+            color='green'
+        elif indicator>=50 and indicator<=80:
+            color='orange'
+        else:
+            color='red'
     txt=f'''
     <div class="tutor">
         <h2>{user.name}</h2>
@@ -61,7 +68,7 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
         <option value="" disabled selected>Выберите лимит</option>
         <option value="0">Отключить лимит</option>
         <option value="5">5</option>
-        <option value="10" selected>10</option>
+        <option value="10">10</option>
         <option value="15">15</option>
         <option value="20">20</option>
     </select>
@@ -70,7 +77,7 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
     <div class="tutor">
         <h3>Всего просмотров: {overall}</h3>
         <h3>Всего подтвержденных бронирований: {counter}</h3>
-        <h3>Вы загружены на {round(counter / user.limit * 100) if user.limit else 0}%</h3>
+        <h3 style="color: {color}">Вы загружены на {indicator}%</h3>
     </div>''' if user.role=='tutor' else ''}
     <hr>
     <h2>Ваши бронирования</h2>
