@@ -111,11 +111,11 @@ async def set_limit(db:AsyncSession=Depends(get_db), token=Cookie(), data=Body()
     if not res:
         return RedirectResponse('/',status_code=303)
     user=res[0]
-    if data['data']==0:
-        user.limit=None
+    if int(data['data'])==0:
+        user.limit=0
         await db.commit()
         return {'status':'ok'}
     else:
-        user.limit=data['data']
+        user.limit=int(data['data'])
         await db.commit()
         return {'status':'ok'}
