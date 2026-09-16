@@ -59,6 +59,8 @@ async def book(token=Cookie(), db:AsyncSession=Depends(get_db), tutor_id:int=For
     await db.refresh(target)
     message=Message(fro=user.name, user_id=user.id, type='accept', to=ad.user_id, booking_id=target.id, txt='Заявка на обучение')
     db.add(message)
+    if user.last_seen:
+        user.last_seen = datetime.now()
     await db.commit()
     return RedirectResponse('/mainpage',status_code=303)
 
@@ -82,6 +84,8 @@ async def create(token=Cookie(), db:AsyncSession=Depends(get_db), subject=Form()
 
     target=Ad(subject=subject, expirience=int(exp), price=int(price), info=info,contact=contact,location=location, user_id=user.id)
     db.add(target)
+    if user.last_seen:
+        user.last_seen = datetime.now()
     await db.commit()
     return RedirectResponse('/mainpage',status_code=303)
 

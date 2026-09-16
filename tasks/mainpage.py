@@ -22,6 +22,10 @@ async def mainpageSHOW(token=Cookie(), db:AsyncSession=Depends(get_db), data=Bod
     if not res:
         return RedirectResponse('/',status_code=303)
     user=res[0]
+    if user.indicator>=100 and user.warned==False:
+        mm=Message(to=user.id, txt='Вы загружены на 100%!', type='system', info='Вы загружены на 100%!')
+        db.add(mm)
+        user.warned=True
     txt='<a href="/create" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Создать объявление</a><p></p><a href="/adlist" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Мои объявления</a><p></p>' if user.role=='tutor' else '<a href="/saves" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Избранные объявления</a><p></p>'
     ads=(await db.execute(select(Ad).options(selectinload(Ad.reviews)).filter(Ad.subject.ilike(f'%{data['subject']}%'), Ad.price<=int(data['price'] if data['price'] else  2147483647), Ad.location.ilike(f'%{data['location']}%')).order_by(desc(Ad.counter)))).all()
     for i in ads:
@@ -46,6 +50,7 @@ async def mainpageSHOW(token=Cookie(), db:AsyncSession=Depends(get_db), data=Bod
             </div>
         </div>
         '''
+    await db.commit()
     if txt:
         return {'message':txt}
     else:
@@ -97,6 +102,7 @@ async def adSHOW(data=Body(), db:AsyncSession=Depends(get_db), token=Cookie()):
         '''
     txt=f'''
     <h1>{user.name}</h1>
+    <h2>Последний раз в сети: {user.last_seen if user.last_seen else 'Скрыт'}</h2>
     <h2>{ad.counter} просмотров</h2>
     <h2>{ad.subject}, стаж {ad.expirience} лет</h2>
     <h2>Цена: {ad.price} руб за час</h2>
@@ -124,3 +130,9 @@ async def save(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body()):
     target=Save(user_id=user.id, ad_id=data['id'])
     db.add(target)
     await db.commit()
+
+@mainpagerouter.get('/logout')
+async def logout(token=Cookie()):
+    response=RedirectResponse('/',status_code=303)
+    response.delete_cookie('token', path='/')
+    return response

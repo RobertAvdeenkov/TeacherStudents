@@ -10,6 +10,9 @@ class User(Base):
     password=Column(String)
     role=Column(String)
     limit=Column(Integer, default=0)
+    warned=Column(Boolean, default=False)
+    indicator=Column(Integer,default=0)
+    last_seen=Column(DateTime,default=func.now(), nullable=True)
 
     ads=relationship('Ad',back_populates='user')
     bookings=relationship('Booking',back_populates='user')

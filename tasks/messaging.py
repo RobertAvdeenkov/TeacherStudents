@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Query,Body,Depends,HTTPException,Cookie,Form
 from fastapi.responses import * #type:ignore
 from database import get_db,AsyncSession
-from sqlalchemy import select, or_,desc
+from sqlalchemy import select, or_,desc,delete
 from models import*
 import bcrypt
 from auth import*
@@ -40,8 +40,8 @@ async def messageSHOW(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body
                 txt+=f'''
                 <div class="tutor">
                     <h2>{i.fro} хочет учиться у вас!</h2>
-                    <button onclick="accept({i.user_id}, {i.booking_id}, {i.id}, 'yes')">Принять</button>
-                    <button onclick="accept({i.user_id}, {i.booking_id}, {i.id}, 'no')">Отклонить</button>
+                    <button style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;" onclick="accept({i.user_id}, {i.booking_id}, {i.id}, 'yes')">Принять</button>
+                    <button style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;" onclick="accept({i.user_id}, {i.booking_id}, {i.id}, 'no')">Отклонить</button>
                     <h3>Отправлено {i.created_at}</h3>
                 </div>
                 '''
@@ -60,7 +60,7 @@ async def messageSHOW(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body
             <div class="tutor">
                 <h3>Текст: {i.txt}</h3>
                 <h3>{i.created_at}</h3>
-                <button onclick="send({i.id})">Удалить сообщение</button>
+                <button style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;" onclick="send({i.id})">Удалить сообщение</button>
             </div>
 
             '''
@@ -89,6 +89,10 @@ async def send_message(token=Cookie(), db:AsyncSession=Depends(get_db), to=Form(
         raise HTTPException(400, 'Такого пользователя нет!')
     target=nam[0]
     message=Message(user_id=user.id, to=target.id, txt=txt, fro=user.name)
+
+    if user.last_seen:
+        user.last_seen = datetime.now()
+
     db.add(message)
     await db.commit()
     return RedirectResponse('/mainpage',status_code=303)
@@ -125,7 +129,6 @@ async def accept(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body()):
         await db.delete(book[0])
         await db.delete(mes)
         await db.commit()
-        return RedirectResponse('/mainpage',status_code=303)
     elif data['ver']=="yes":
         book=(await db.execute(select(Booking).filter(Booking.id==data['id'], Booking.user_id==data['user_id']))).first()
         if not book:
@@ -135,4 +138,17 @@ async def accept(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body()):
         db.add(target)
         await db.delete(mes)
         await db.commit()
-        return RedirectResponse('/mainpage',status_code=303)
+    if user.last_seen:
+        user.last_seen = datetime.now()
+    await db.commit()
+    return RedirectResponse('/mainpage',status_code=303)
+
+@messagerouter.post('/clearall')
+async def clearall(token=Cookie(), db:AsyncSession=Depends(get_db)):
+    res=(await db.execute(select(User).filter(User.name==get_by_token(token)))).first()
+    if not res:
+        return RedirectResponse('/',status_code=303)
+    user=res[0]
+    al=(await db.execute(delete(Message).filter(Message.to==user.id)))
+    await db.commit()
+    return {'status':'ok'}

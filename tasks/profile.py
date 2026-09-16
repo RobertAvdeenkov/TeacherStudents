@@ -22,6 +22,7 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
     if not(res):
         raise HTTPException(401, 'Вы не зарегистрированы!')
     user=res[0]
+    print(user.last_seen)
     booking=''
     counter=0
     overall=0
@@ -33,7 +34,7 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
                 booking+=f'''
                 <h3>{ad.subject}, {ad.contact}</h3>
                 <h4>{i[0].time}<h4>
-                <button onclick="send({i[0].id})" style="background-color: red;">Отменить</button>
+                <button onclick="send({i[0].id})" style="color: #ffffff; background-color: red; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Отменить</button>
                 <hr>
                 '''
     else:
@@ -46,23 +47,35 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
                     booking+=f'''
                     <h3>{i[0].subject}, {book.contact}</h3>
                     <h4>{book.time}<h4>
-                    <button onclick="send({book.id})" style="background-color: red;">Отменить</button>
+                    <button onclick="send({book.id})" style="color: #ffffff; background-color: red; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Отменить</button>
                     <hr>
                     '''
         indicator=round(counter / user.limit * 100) if user.limit else 0
         if indicator<50:
             color='green'
+            user.warned=False
         elif indicator>=50 and indicator<=80:
             color='orange'
+            user.warned=False
         else:
             color='red'
+            if user.warned==False:
+                mm=Message(to=user.id, txt='Вы загружены на 100%!', type='system', info='Вы загружены на 100%!')
+                db.add(mm)
+                user.warned=True
+        user.indicator=indicator
+
     txt=f'''
     <div class="tutor">
         <h2>{user.name}</h2>
         <h3 style="color: #888;">{f'Репетитор<br>Лимит {user.limit}' if user.role=='tutor' else 'Ученик'}</h3>
     </div>
-    <hr>
     {f'''
+    <hr>
+    <h2>Параметры</h2>
+    <div class="tutor">
+        <button style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;" onclick="toggleLastSeen()">{'Не показывать' if user.last_seen else 'Показывать'} время последнего действия</button>
+    </div>
     <h2>Установить лимит бронирований</h2>
     <select onchange="setLimit()" id="limitset">
         <option value="" disabled selected>Выберите лимит</option>
@@ -77,9 +90,14 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
     <div class="tutor">
         <h3>Всего просмотров: {overall}</h3>
         <h3>Всего подтвержденных бронирований: {counter}</h3>
-        <h3 style="color: {color}">Вы загружены на {indicator}%</h3>
-    </div>''' if user.role=='tutor' else ''}
-    <hr>
+        <h3 style="color: {color}">Вы загружены на {min(indicator,100)}%</h3>
+
+        <div style="width: 100%; background: #e0e0e0; border-radius: 10px; overflow: hidden;">
+            <div style="width: {min(indicator,100)}%; background: {color}; height: 20px; border-radius: 10px; transition: width 0.1s;"></div>
+        </div>
+        <p style="color: {color};">Загрузка: {min(indicator,100)}%</p>
+    </div>
+    <hr>''' if user.role=='tutor' else ''}
     <h2>Ваши бронирования</h2>
     <div class="tutor">
         {booking if booking else '<h3>У вас нет бронирований ¯\\_(ツ)_/¯</h3>'}
@@ -119,3 +137,16 @@ async def set_limit(db:AsyncSession=Depends(get_db), token=Cookie(), data=Body()
         user.limit=int(data['data'])
         await db.commit()
         return {'status':'ok'}
+
+@profilerouter.post('/toggleshow')
+async def toggleshow(token=Cookie(), db:AsyncSession=Depends(get_db)):
+    res=(await db.execute(select(User).filter(User.name==get_by_token(token)).options(selectinload(User.messages)))).first()
+    if not res:
+        return RedirectResponse('/',status_code=303)
+    user=res[0]
+    if user.last_seen:
+        user.last_seen=None
+    else:
+        user.last_seen=datetime.now()
+    await db.commit()
+    return {'status':'ok'}

@@ -68,6 +68,7 @@
             </select>
             <p></p>
             <a href="/sending" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Написать письмо</a>
+            <button style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;" onclick="clearALL()">Очистить</button>
             <p></p>
                     <!-- Элемент для сообщения (будет отображать data.message) -->
                     
@@ -156,6 +157,31 @@
                     }
                 } catch (e) {
                     console.error(e);  // ← посмотри, что падает
+                }
+            }
+
+
+            async function clearALL() {
+                if (!confirm){return}
+            // 3. ПОТОМ отправляем запрос
+                try {
+                    const response = await fetch('/clearall', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({})
+                    });
+
+                    if (response.ok) {
+                        alert('Успешно!')
+                        location.reload()
+                    } else {
+                        const error = await response.json();
+                        alert(error.detail || 'Ошибка авторизации');
+                    }
+                } catch (e) {
+                    ;
                 }
             }
 

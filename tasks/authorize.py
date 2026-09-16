@@ -38,6 +38,9 @@ async def login(data=Body(), db:AsyncSession=Depends(get_db)):
     if not(bcrypt.checkpw(data['password'].encode(), user.password.encode())):
         raise HTTPException(400, 'Неправильный логин или пароль')
     token=create_token(user.name)
+    if user.last_seen:
+        user.last_seen = datetime.now() 
+        await db.commit()
     return {'status':'ok','redirect_url':f'/mainpageRED?token={token}'}
 
 @authrouter.get('/mainpageRED')
