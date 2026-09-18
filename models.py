@@ -21,6 +21,9 @@ class User(Base):
     messages=relationship('Message', back_populates='user')
     views=relationship('View', back_populates='user')
 
+    given=relationship('Recommend', foreign_keys='recommend.user_id', back_populates='user')
+    recommended_by=relationship('Recommend', foreign_keys='recommend.to_user_id', back_populates='to_user')
+
 
 class Ad(Base):
     __tablename__='ads'
@@ -98,3 +101,13 @@ class View(Base):
 
     user=relationship('User', back_populates='views')
     ad=relationship('Ad', back_populates='views')
+
+class Recommend(Base):
+    __tablename__='recommend'
+    id=Column(Integer,primary_key=True)
+    user_id=Column(Integer,ForeignKey('users.id'))
+    to_user_id=Column(Integer,ForeignKey('users.id'))
+    created_at=Column(DateTime, default=func.now())
+
+    user=relationship('User', foreign_keys=[user_id], back_populates='given')
+    to_user=relationship('User', foreign_keys=[to_user_id], back_populates='recommended_by')

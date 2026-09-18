@@ -22,7 +22,6 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
     if not(res):
         raise HTTPException(401, 'Вы не зарегистрированы!')
     user=res[0]
-    print(user.last_seen)
     booking=''
     counter=0
     overall=0

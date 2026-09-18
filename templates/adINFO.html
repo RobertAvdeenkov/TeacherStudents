@@ -95,6 +95,31 @@
                 }
             }
 
+
+            async function recommend(id) {
+                try {
+                    const response = await fetch('/recommend', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({'id':id})
+                    });
+
+                    if (response.ok) {
+                        alert('Успешно!')
+                        location.reload()
+                    } else {
+                        const error = await response.json();
+                        alert(error.detail || 'Ошибка авторизации');
+                    }
+                } catch (e) {
+                    ;
+                }
+            }
+
+
+
             document.addEventListener('DOMContentLoaded', list);
         </script>
 </html>

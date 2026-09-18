@@ -64,7 +64,7 @@ def ad(id:int=Query()):
 @mainpagerouter.post('/adSHOW')
 async def adSHOW(data=Body(), db:AsyncSession=Depends(get_db), token=Cookie()):
     id=int(data['id'])
-    res=(await db.execute(select(User).filter(User.name==get_by_token(token)).options(selectinload(User.views)))).first()
+    res=(await db.execute(select(User).filter(User.name==get_by_token(token)).options(selectinload(User.views), selectinload(User.given)))).first()
     if not res:
         return RedirectResponse('/',status_code=303)
     userd=res[0]
@@ -77,6 +77,12 @@ async def adSHOW(data=Body(), db:AsyncSession=Depends(get_db), token=Cookie()):
     if not resultUSER:
         return RedirectResponse('/', status_code=303)
     user=resultUSER[0] #type:ignore
+    recommendations=(await db.execute(select(Recommend).filter(Recommend.to_user_id==user.id).options(selectinload(Recommend.user)).order_by(desc(Recommend.created_at)).limit(5))).all()
+    recomendation_txt='<h2>'
+    for i in recommendations:
+        recomendator=i[0].user
+        recomendation_txt+=f'{recomendator.name}<br>'
+    recomendation_txt+='</h2>'
     been=set()
     for i in userd.views:
         been.add(i.ad_id)
@@ -85,6 +91,11 @@ async def adSHOW(data=Body(), db:AsyncSession=Depends(get_db), token=Cookie()):
         ad.counter+=1
         db.add(view)
         await db.commit()
+    for i in userd.given:
+        if i.to_user_id==user.id:
+            given=True
+            break
+        given=False
     INFO=''
     reviewTXT=''
     for index,i in enumerate(ad.info): #цикл для того, чтобы текст не был на одной строке
@@ -92,7 +103,6 @@ async def adSHOW(data=Body(), db:AsyncSession=Depends(get_db), token=Cookie()):
             INFO+=i+'<br>'
         else:
             INFO+=i
-
     for i in reviews:
         reviewTXT+=f'''
         <div class="tutor">
@@ -104,12 +114,16 @@ async def adSHOW(data=Body(), db:AsyncSession=Depends(get_db), token=Cookie()):
     <h1>{user.name}</h1>
     <h2>Последний раз в сети: {user.last_seen if user.last_seen else 'Скрыт'}</h2>
     <h2>{ad.counter} просмотров</h2>
+    {f'<button style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;" onclick="recommend({user.id})">{'Порекомендовать' if not(given) else 'Убрать рекомендацию'} учителя</button>' if userd.role=='tutor' else ''}
     <h2>{ad.subject}, стаж {ad.expirience} лет</h2>
     <h2>Цена: {ad.price} руб за час</h2>
     <h2>{ad.location}</h2>
     <h3>{INFO}</h3>
     <p></p>
     <h3>Контактная информация: {ad.contact}</h3>
+    <hr>
+    <h2>Рекомендуют</h2>
+    {recomendation_txt}
     <hr>
     <h2>Отзывы</h2>
     {reviewTXT}
@@ -136,3 +150,22 @@ async def logout(token=Cookie()):
     response=RedirectResponse('/',status_code=303)
     response.delete_cookie('token', path='/')
     return response
+
+@mainpagerouter.post('/recommend')
+async def recommend(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body()):
+    res=(await db.execute(select(User).filter(User.name==get_by_token(token)).options(selectinload(User.given)))).first()
+    if not res:
+        return RedirectResponse('/',status_code=303)
+    user=res[0]
+    if user.role=='student':
+        raise HTTPException(400, 'Вы не можете рекомендовать репетиторов')
+    for i in user.given:
+        if i.to_user_id==int(data['id']):
+            await db.delete(i)
+            await db.commit()
+            return {'status':'ok'}
+    target=Recommend(user_id=user.id, to_user_id=int(data['id']))
+    message=Message(to=int(data['id']),txt=f'{user.name} рекомендует вас!', info=f'{user.name} рекомендует вас', type='system')
+    db.add_all([target,message])
+    await db.commit()
+    
