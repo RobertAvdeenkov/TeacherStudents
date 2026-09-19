@@ -1,12 +1,10 @@
-from fastapi import APIRouter,Query,Body,Depends,HTTPException,Cookie,Form
+from fastapi import APIRouter,Query,Body,Depends,HTTPException
 from fastapi.responses import * #type:ignore
 from database import get_db,AsyncSession
-from sqlalchemy import select, or_,desc
+from sqlalchemy import select
 from models import*
 import bcrypt
 from auth import*
-from sqlalchemy.orm import selectinload
-from typing import Optional
 from datetime import datetime
 
 authrouter=APIRouter()
