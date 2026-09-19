@@ -91,6 +91,7 @@ async def adSHOW(data=Body(), db:AsyncSession=Depends(get_db), token=Cookie()):
         ad.counter+=1
         db.add(view)
         await db.commit()
+    given=False
     for i in userd.given:
         if i.to_user_id==user.id:
             given=True
@@ -112,9 +113,9 @@ async def adSHOW(data=Body(), db:AsyncSession=Depends(get_db), token=Cookie()):
         '''
     txt=f'''
     <h1>{user.name}</h1>
-    <h2>Последний раз в сети: {user.last_seen if user.last_seen else 'Скрыт'}</h2>
+    <h2>Последний раз в сети: {user.last_seen.strftime('%d.%m.%Y %H:%M') if user.last_seen else 'Скрыт'}</h2>
     <h2>{ad.counter} просмотров</h2>
-    {f'<button style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;" onclick="recommend({user.id})">{'Порекомендовать' if not(given) else 'Убрать рекомендацию'} учителя</button>' if userd.role=='tutor' else ''}
+    {f'<button style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;" onclick="recommend({user.id})">{'Порекомендовать' if not(given) else 'Убрать рекомендацию'} учителя</button>' if userd.role=='tutor' and user.id!=ad.user_id else ''}
     <h2>{ad.subject}, стаж {ad.expirience} лет</h2>
     <h2>Цена: {ad.price} руб за час</h2>
     <h2>{ad.location}</h2>
@@ -123,10 +124,10 @@ async def adSHOW(data=Body(), db:AsyncSession=Depends(get_db), token=Cookie()):
     <h3>Контактная информация: {ad.contact}</h3>
     <hr>
     <h2>Рекомендуют</h2>
-    {recomendation_txt}
+    {recomendation_txt if recomendation_txt!='<h2></h2>' else '<h2>Рекомендаций пока нет ¯\\_(ツ)_/¯</h2>'}
     <hr>
     <h2>Отзывы</h2>
-    {reviewTXT}
+    {reviewTXT if reviewTXT else '<h2>Отзывов пока нет ¯\\_(ツ)_/¯</h2>'}
     '''
     return {'message':txt}
 

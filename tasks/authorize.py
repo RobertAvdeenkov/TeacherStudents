@@ -24,7 +24,7 @@ async def register(data=Body(),db:AsyncSession=Depends(get_db)):
     result=(await db.execute(select(User).filter(User.name==data['name']))).first()
     if result:
         raise HTTPException(400, 'Пользователь с таким логин уже есть!')
-    if len(data['password'])<8 or len(data['user']<4):
+    if len(data['password'])<8 or len(data['name'])<4:
         raise HTTPException(400, 'Минимальное кол-во символов в пароле 8, а в логине 4')
     target=User(name=data['name'], password=bcrypt.hashpw(data['password'].encode(), bcrypt.gensalt()).decode(), role=data['role'])
     db.add(target)

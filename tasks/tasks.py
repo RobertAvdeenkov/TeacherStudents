@@ -17,10 +17,12 @@ async def review(id=Query()):
 
 @router.post('/feedback')
 async def feedback(tutor_id:int=Form(), category=Form(),text:str=Form(), token=Cookie(), db:AsyncSession=Depends(get_db)):
-    res=(await db.execute(select(User).filter(User.name==get_by_token(token)))).first()
+    res=(await db.execute(select(User).filter(User.name==get_by_token(token)).options(selectinload(User.ads)))).first()
     if not res:
         raise HTTPException(401, 'Вы не зарегистрированы')
     user=res[0]
+    if user.role=='tutor':
+        return RedirectResponse('/mainpage',status_code=303)
     target=(await db.execute(select(Review).filter(Review.user_id==user.id, Review.ad_id==int(tutor_id)))).first()
     if target:
         return RedirectResponse('/mainpage',status_code=303)

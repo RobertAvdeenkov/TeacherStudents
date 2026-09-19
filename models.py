@@ -21,9 +21,9 @@ class User(Base):
     messages=relationship('Message', back_populates='user')
     views=relationship('View', back_populates='user')
 
-    given=relationship('Recommend', foreign_keys='recommend.user_id', back_populates='user')
-    recommended_by=relationship('Recommend', foreign_keys='recommend.to_user_id', back_populates='to_user')
 
+    given=relationship('Recommend', foreign_keys='Recommend.user_id', back_populates='user')
+    recommended_by=relationship('Recommend', foreign_keys='Recommend.to_user_id', back_populates='to_user')
 
 class Ad(Base):
     __tablename__='ads'
