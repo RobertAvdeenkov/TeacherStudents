@@ -47,5 +47,5 @@ async def login(data=Body(), db:AsyncSession=Depends(get_db)):
 async def mainpageRED(token=Query()):
     get_by_token(token)
     response=RedirectResponse('/mainpage')
-    response.set_cookie(key='token',value=token, max_age=3600, path='/')
+    response.set_cookie(key='token',value=token, max_age=3600, path='/', httponly=True, samesite='lax',secure=True)
     return response
