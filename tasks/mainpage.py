@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Query,Body,Depends,HTTPException,Cookie,Form
 from fastapi.responses import * #type:ignore
 from database import get_db,AsyncSession
-from sqlalchemy import select,desc
+from sqlalchemy import select,desc,text
 from models import*
 from auth import*
 from sqlalchemy.orm import selectinload
@@ -40,9 +40,9 @@ async def mainpageSHOW(token=Cookie(), db:AsyncSession=Depends(get_db), data=Bod
             <div class="info">{i[0].counter} просмотров</div>
             <div class="price">{i[0].price} ₽ / час</div>
             <div class="actions">
-                <button onclick="book({i[0].id})">Записаться</button>
+                {f'''<button onclick="book({i[0].id})">Записаться</button>
                 <button onclick="feedback({i[0].id})">Оставить отзыв</button>
-                <button onclick="like({i[0].id})">Добавить в избранные</button>
+                <button onclick="like({i[0].id})">Добавить в избранные</button>''' if user.role=='student' else ''}
                 <button class="secondary" onclick="viewProfile({i[0].id})">Подробнее</button>
             </div>
         </div>
@@ -166,4 +166,34 @@ async def recommend(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body()
     message=Message(to=int(data['id']),txt=f'{user.name} рекомендует вас!', info=f'{user.name} рекомендует вас', type='system')
     db.add_all([target,message])
     await db.commit()
-    
+
+@mainpagerouter.get('/tops')
+async def tops(token=Cookie()):
+    get_by_token(token)
+    return FileResponse('templates/tops.html')
+
+@mainpagerouter.post('/topsSHOW')
+async def topsSHOW(token=Cookie(), db:AsyncSession=Depends(get_db)):
+    ex=text('''
+        select users.name as name, AVG(reviews.stars) as star, COUNT(ads.counter) as views
+        from users
+        INNER JOIN ads on users.id=ads.user_id
+        INNER JOIN reviews on ads.id=reviews.ad_id
+        GROUP BY users.name
+        HAVING users.role='tutor'
+        ORDER by AVG(reviews.stars), COUNT(ads.counter) DESC
+        LIMIT 10
+    ''')
+    result=(await db.execute(ex)).all()
+    if not result:
+        return {'message':'<div class="tutor"><h2>Лидеров пока нет ¯\\_(ツ)_/</h2></div>'}
+    txt=f''
+    for index,i in enumerate(result):
+        txt+=f'''
+        <div class="tutor">
+            <h2>{'🏆' if index+1==1 else ''}{'🥈' if index+1==2 else ''}{'🥉' if index+1==3 else ''}№{index+1} {i[0]}</h2>
+            <h3>Рейтинг: {i[1]}</h3>
+            <h3>Всего просмотров: {i[2]}</h3>
+        </div>
+        '''
+    return {'message':txt}
