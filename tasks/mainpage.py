@@ -173,14 +173,14 @@ async def tops(token=Cookie()):
     return FileResponse('templates/tops.html')
 
 @mainpagerouter.post('/topsSHOW')
-async def topsSHOW(token=Cookie(), db:AsyncSession=Depends(get_db)):
-    ex=text('''
+async def topsSHOW(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body()):
+    ex=text(f'''
         select users.name as name, AVG(reviews.stars) as star, COUNT(ads.counter) as views, users.role as role
         from users
         INNER JOIN ads on users.id=ads.user_id
         INNER JOIN reviews on ads.id=reviews.ad_id
         GROUP BY users.name, users.role
-        HAVING users.role='tutor'
+        HAVING ads.subject ilike '%{data['data']}%'
         ORDER by AVG(reviews.stars), COUNT(ads.counter) DESC
         LIMIT 10
     ''')

@@ -45,6 +45,16 @@
 <body>
         <div class="container">
                 <h1>Лучшие репетиторы</h1>
+                <select onchange="list()" id="filter">
+                    <option value="" selected>Все предметы</option>
+                    <option value="Математика">Математика</option>
+                    <option value="Физика">Физика</option>
+                    <option value="Химия">Химия</option>
+                    <option value="Английский">Английский</option>
+                    <option value="Русский">Русский</option>
+                    <option value="История">История</option>
+                    <option value="Информатика">Информатика</option>
+                </select>
                     <!-- Элемент для сообщения (будет отображать data.message) -->
                     
                     <!-- Элемент для контента -->
@@ -55,6 +65,7 @@
 </body>
 <script>
             async function list() {
+                data=document.getElementById('filter').value;
                 try {
                     const response = await fetch('/topsSHOW', {
                         method: 'POST',
@@ -62,6 +73,7 @@
                             "Accept": "application/json", 
                             "Content-Type": "application/json"
                         },
+                        body: JSON.stringify({'data':data})
                     });
 
                     if (response.ok) {
