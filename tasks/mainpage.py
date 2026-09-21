@@ -179,7 +179,7 @@ async def topsSHOW(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body())
         from users
         INNER JOIN ads on users.id=ads.user_id
         INNER JOIN reviews on ads.id=reviews.ad_id
-        GROUP BY users.name, users.role
+        GROUP BY users.name, users.role, ads.subject
         HAVING ads.subject ilike '%{data['data']}%'
         ORDER by AVG(reviews.stars), COUNT(ads.counter) DESC
         LIMIT 10
