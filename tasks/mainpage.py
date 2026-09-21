@@ -183,6 +183,15 @@ async def topsSHOW(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body())
         HAVING ads.subject ilike '%{data['data']}%'
         ORDER by AVG(reviews.stars), COUNT(ads.counter) DESC
         LIMIT 10
+    ''' if data['data'] else '''
+    select users.name as name, AVG(reviews.stars) as star, COUNT(ads.counter) as views, users.role as role
+    from users
+    INNER JOIN ads on users.id=ads.user_id
+    INNER JOIN reviews on ads.id=reviews.ad_id
+    GROUP BY users.name, users.role
+    HAVING user.role="tutor"
+    ORDER by AVG(reviews.stars), COUNT(ads.counter) DESC
+    LIMIT 10
     ''')
     result=(await db.execute(ex)).all()
     if not result:
