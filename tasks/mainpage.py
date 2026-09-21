@@ -192,7 +192,7 @@ async def topsSHOW(token=Cookie(), db:AsyncSession=Depends(get_db)):
         txt+=f'''
         <div class="tutor">
             <h2>{'🏆' if index+1==1 else ''}{'🥈' if index+1==2 else ''}{'🥉' if index+1==3 else ''}№{index+1} {i[0]}</h2>
-            <h3>Рейтинг: {i[1]}</h3>
+            <h3>Рейтинг: {round(float(i[1]),2)}</h3>
             <h3>Всего просмотров: {i[2]}</h3>
         </div>
         '''
