@@ -131,6 +131,11 @@ async def accept(token=Cookie(), db:AsyncSession=Depends(get_db), data=Body()):
         book=(await db.execute(select(Booking).filter(Booking.id==data['id'], Booking.user_id==data['user_id']))).first()
         if not book:
             raise HTTPException(400, 'Такой брони нет')
+        result=(await db.execute(select(User).filter(User.id==int(data['user_id'])).options(selectinload(User.messages)))).first()
+        if not result:
+            raise HTTPException(400, 'Такого пользователя больше нет!')
+        userto=result[0]
+        userto.bookingcounter+=1
         book[0].accepted=True
         target=Message(to=int(data['user_id']), txt=f'{user.name} одобрил ваше предложение', info=f'{user.name} одобрил ваше предложение', type='system')
         db.add(target)

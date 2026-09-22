@@ -13,6 +13,8 @@ class User(Base):
     warned=Column(Boolean, default=False)
     indicator=Column(Integer,default=0)
     last_seen=Column(DateTime,default=func.now(), nullable=True)
+    status=Column(Boolean, default=False)
+    bookingcounter=Column(Integer,default=0)
 
     ads=relationship('Ad',back_populates='user')
     bookings=relationship('Booking',back_populates='user')

@@ -24,6 +24,8 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
     counter=0
     overall=0
     if user.role=='student':
+        if user.bookingcounter>=3 and user.status==False:
+            user.status=True
         res=(await db.execute(select(Booking).filter(Booking.user_id==user.id).options(selectinload(Booking.ad)))).all()
         for i in res:
             if i[0].accepted==True:
@@ -47,6 +49,8 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
                     <button onclick="send({book.id})" style="color: #ffffff; background-color: red; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Отменить</button>
                     <hr>
                     '''
+        if user.status==False and overall>=100:
+            user.status=True
         indicator=round(counter / user.limit * 100) if user.limit else 0
         if indicator<50:
             color='green'
@@ -65,7 +69,7 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
     txt=f'''
     <div class="tutor">
         <h2>{user.name}</h2>
-        <h3 style="color: #888;">{f'Репетитор<br>Лимит {user.limit}' if user.role=='tutor' else 'Ученик'}</h3>
+        <h3 style="color: #888;">{f'{'Доверенный ' if user.status==True else ''}Репетитор<br>Лимит {user.limit}' if user.role=='tutor' else f'{'Доверенный ' if user.status==True else ''}Ученик'}</h3>
     </div>
     {f'''
     <hr>
@@ -100,6 +104,7 @@ async def profileSHOW(token=Cookie(),db:AsyncSession=Depends(get_db)):
         {booking if booking else '<h3>У вас нет бронирований ¯\\_(ツ)_/¯</h3>'}
     </div>
     '''
+    await db.commit()
     return {'message':txt}
 
 @profilerouter.post('/deleteBOOKING')
