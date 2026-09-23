@@ -109,7 +109,7 @@ async def adSHOW(data=Body(), db:AsyncSession=Depends(get_db), token=Cookie()):
         </div>
         '''
     txt=f'''
-    <h1>{user.name}</h1>
+    <h1>{user.name}{'<br>⭐Доверенный пользователь⭐' if user.status==True else ''}</h1>
     <h2>Последний раз в сети: {user.last_seen.strftime('%d.%m.%Y %H:%M') if user.last_seen else 'Скрыт'}</h2>
     <h2>{ad.counter} просмотров</h2>
     {f'<button style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;" onclick="recommend({user.id})">{'Порекомендовать' if not(given) else 'Убрать рекомендацию'} учителя</button>' if userd.role=='tutor' and userd.id!=ad.user_id and userd.status==True else ''}

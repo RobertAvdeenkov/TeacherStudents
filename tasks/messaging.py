@@ -86,7 +86,7 @@ async def send_message(token=Cookie(), db:AsyncSession=Depends(get_db), to=Form(
     if not nam:
         raise HTTPException(400, 'Такого пользователя нет!')
     target=nam[0]
-    message=Message(user_id=user.id, to=target.id, txt=txt, fro=user.name)
+    message=Message(user_id=user.id, to=target.id, txt=txt, fro=user.name if user.status==False else f'⭐Доверенный пользователь⭐<br>{user.name}')
 
     if user.last_seen:
         user.last_seen = datetime.now()
