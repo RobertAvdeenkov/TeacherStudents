@@ -1,7 +1,7 @@
 from fastapi import APIRouter,Query,Body,Depends,HTTPException,Cookie,Form
 from fastapi.responses import * #type:ignore
 from database import get_db,AsyncSession
-from sqlalchemy import select,desc,text
+from sqlalchemy import select,desc,text,func
 from models import*
 from auth import*
 from sqlalchemy.orm import selectinload
@@ -25,6 +25,15 @@ async def mainpageSHOW(token=Cookie(), db:AsyncSession=Depends(get_db), data=Bod
         user.warned=True
     txt='<a href="/create" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Создать объявление</a><p></p><a href="/adlist" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Мои объявления</a><p></p>' if user.role=='tutor' else '<a href="/saves" style="color: #000000; background-color: #ffcc08; text-decoration:none; padding: 5px; border-radius: 5px;font-weight: bold;">Избранные объявления</a><p></p>'
     ads=(await db.execute(select(Ad).options(selectinload(Ad.reviews)).filter(Ad.subject.ilike(f'%{data['subject']}%'), Ad.price<=int(data['price'] if data['price'] else  2147483647), Ad.location.ilike(f'%{data['location']}%')).order_by(desc(Ad.counter)))).all()
+    allstudents=(await db.scalar(select(func.count(User.id)).filter(User.role=='student')))
+    alltutors=(await db.scalar(select(func.count(User.id)).filter(User.role=='tutor')))
+    allbookings=(await db.scalar(select(func.count(Booking.id))))
+    txt+=f'''
+    <h3>Всего учеников: {allstudents}</h3>
+    <h3>Всего репетиторов: {alltutors}</h3>
+    <h3>Всего активных броней: {allbookings}</h3>
+    <p></p>
+    '''
     for i in ads:
         rating=0
         counter=0
